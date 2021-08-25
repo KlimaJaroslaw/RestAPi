@@ -1,7 +1,9 @@
 using Commander.Data;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +27,12 @@ namespace Commander
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
+            string Connectstring = "Server= DESKTOP-16DL9PF\\SQLEXPRESS; Database=asmag_test;User ID=sa;Password=AproSoft2409";
+            GlobalData.connection = new SqlConnection(Connectstring);
+            GlobalData.connection.Open();
+
+
             services.AddDbContext<CommanderContext>(opt => opt.UseSqlServer(Configuration.GetConnectionString("CommanderConnection")));
 
             services.AddControllersWithViews();

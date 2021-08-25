@@ -21,4 +21,21 @@ namespace Commander.Models
         [Required]
         public string Platform { get; set; }
     }
+
+    public class Orders
+    {
+        [Key]
+        public int Id { get; set; }
+
+        [Required]
+        [MaxLength(250)]
+        public DateTime Date { get; set; }
+
+        [Required]
+        public string  DocNum { get; set; }
+
+        [Required]
+        public string Customer { get; set; }
+    }
+
 }
