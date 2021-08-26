@@ -21,6 +21,21 @@ namespace Commander
             return dt;
         }
 
+        public static DataTable ExecCmd(SqlCommand cmd)
+        {
+            DataTable dt = new DataTable();
+            SqlDataAdapter da = new SqlDataAdapter();
+            da.SelectCommand = cmd;
+            da.Fill(dt);
+            return dt;
+        }
+
+        public static SqlCommand SqlIntoCommand(string sql)
+        {
+            SqlCommand cmd = new SqlCommand(sql, connection);
+            return cmd;
+        }
+
 
         public static string DataTableToJsonObj(DataTable dt)
         {
