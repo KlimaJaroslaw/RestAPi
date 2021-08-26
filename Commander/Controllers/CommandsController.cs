@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Commander.Controllers
 {
-    [Route("api/con")]
+    [Route("api/asmag")]
     [ApiController]
     public class CommandsController : ControllerBase
     {
@@ -60,34 +60,76 @@ namespace Commander.Controllers
 
         //}
 
+        /// <summary>
+        /// Pobranie nagłówków zamówień wg następujący filtrów:
+        /// </summary>
+        /// <param name="date_min"></param>
+        ///                     Data początkowa - parametr wymagany
+        /// <param name="date_max"></param>
+        ///                     Data końcowa - parametr wymagany
+        /// <param name="invoiced"></param>
+        ///                         Zafakturowany (zafakturowany) (A_zamowienia.zrealizowano <> 0)        
+        ///                         -1 - brak parametru
+        ///                         0 - nie zafakturowane
+        ///                         1 - zafakturowane
+        /// <param name="paid"></param>
+        ///     Opłacony ISNULL(A_zamowienia.brutto,0) <= ISNULL(A_zanowienia.rozliczony,0)
+        ///                         -1 - brak filtru
+        ///                         0 - nie opłacone
+        ///                         1 - opłacone
+        /// <param name="ext_id"></param>
+        ///     Zewnętrzne id: A_zamowienia.ext_id
+        ///                     '' - puste 
+        /// <param name="status_id"></param>
+        ///                     Status zamówienia na podstaiwie statusów zamówień
+        ///                     Na podstawie statusów GetOrderStatus
+        /// <returns></returns>
         [HttpGet("test")]
         public ActionResult/*<OrdersReadDto>*/ GetOrders([FromQuery] int id, [FromQuery] string numer_ogolny="")
         {
             ///_context = new CommanderContext(opt => opt.UseSqlServer(Configuration.GetConnectionString("CommanderConnection")));
             string sql;
-            if (numer_ogolny=="")
-            {
-                sql = @"SELECT 
-                                                    ID AS Id,
-                                                    data_wystawienia AS Date,
-                                                    numer_mag AS DocNum,
-                                                    skrot_nazwy AS Customer
-                                                FROM A_zamowienia
-                                                    INNER JOIN A_klienci ON A_zamowienia.id_kontrah = A_klienci.id_klienta
-                                                WHERE ID=@id";
-            }
-            else
-            {
-                sql = @"SELECT 
-                                                    ID AS Id,
-                                                    data_wystawienia AS Date,
-                                                    numer_mag AS DocNum,
-                                                    skrot_nazwy AS Customer
-                                                FROM A_zamowienia
-                                                    INNER JOIN A_klienci ON A_zamowienia.id_kontrah = A_klienci.id_klienta
-                                                WHERE ID=@id AND numer_ogolny=@name";
+            string cWhere = string.Empty;
+            int paid = -1;
 
-            }
+            //TODO: Zrobić walidację parametrów
+            //GetOrderStatuses: SELECT id, wartosc AS Status FROM A_slo_statusy_www
+            //TODO: GetOrdersItems: parametr id - id_zamowenia:
+            //SELECT 
+            //kat_towary.symbol AS ItemCode,
+			//				kat_towary.nazwa AS ItemName,
+			//				A_zamowienia_skl.ilosc AS Qty,
+			//				A_zamowienia_skl.cena_s AS NetPrice,
+			//				A_zamowienia_skl.cena_s AS Net
+             //            FROM A_zamowienia_skl
+              //              INNER JOIN kat_towary ON kat_towary.id = A_zamowienia_skl.id_towaru
+
+
+            cWhere = " AND A_zamowienia.id = @id ";
+            if (numer_ogolny != "")
+                cWhere += " AND A_zamowienia.numer_ogolny = @name ";
+
+            if (paid == 1)
+                cWhere += " AND ISNULL(A_zamowienia.brutto,0) <= ISNULL(A_zanowienia.rozliczony,0) ";
+
+            if (paid == 0)
+                cWhere += " AND ISNULL(A_zamowienia.brutto,0) > ISNULL(A_zanowienia.rozliczony,0) ";
+
+
+            sql = $@"SELECT 
+                         A_zamowienia.ID AS Id,
+                         A_zamowienia.data_wystawienia AS Date,
+                         A_zamowienia.numer_mag AS DocNum,
+                         A_klienci.skrot_nazwy AS Customer,
+                         A_zamowienia.ext_id,
+                         A_zamowienia.netto AS Net,
+                         A_zamowienia.netto AS Total,
+						 A_slo_statusy_www.id AS Status_id,
+						 A_slo_statusy_www.wartosc AS Status
+                     FROM A_zamowienia
+                         INNER JOIN A_klienci ON A_zamowienia.id_kontrah = A_klienci.id_klienta
+						 INNER JOIN A_slo_statusy_www ON A_zamowienia.id_slo_status_www = A_slo_statusy_www.id
+                     WHERE (1=1) {cWhere}";
 
             SqlCommand cmd = GlobalData.SqlIntoCommand(sql);
             cmd.Parameters.Add("@id", SqlDbType.Int);
