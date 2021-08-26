@@ -28,10 +28,10 @@ namespace Commander.Controllers
         }
         //private readonly MockCommanderRepo _repository = new MockCommanderRepo();
         [HttpGet]
-        public ActionResult<IEnumerable<CommandReadDto>> GetAllCommands()
+        public ActionResult<IEnumerable<OrdersReadDto>> GetOrders()
         {
-            ///_context = new CommanderContext(opt => opt.UseSqlServer(Configuration.GetConnectionString("CommanderConnection")));
-            string sql = @"SELECT 
+            //_context = new CommanderContext(opt => opt.UseSqlServer(Configuration.GetConnectionString("CommanderConnection")));
+            string sql = @"SELECT
                                                     ID AS Id,
                                                     data_wystawienia AS Date,
                                                     numer_mag AS DocNum,
@@ -61,7 +61,7 @@ namespace Commander.Controllers
         //}
 
         [HttpGet("test")]
-        public ActionResult<CommandReadDto> GetCommandById([FromQuery] int id, [FromQuery] string numer_ogolny="")
+        public ActionResult/*<OrdersReadDto>*/ GetOrders([FromQuery] int id, [FromQuery] string numer_ogolny="")
         {
             ///_context = new CommanderContext(opt => opt.UseSqlServer(Configuration.GetConnectionString("CommanderConnection")));
             string sql;
@@ -110,19 +110,19 @@ namespace Commander.Controllers
 
 
 
-        [HttpPost]
-        public ActionResult  <CommandReadDto> CreateCommand(CommandCreateDto commandCreateDto)
-        {   
-            var commandModel = _mapper.Map<Command>(commandCreateDto);
-            _repository.CreateCommand(commandModel);
-            _repository.SaveChanges();
+        //[HttpPost]
+        //public ActionResult  <CommandReadDto> CreateCommand(CommandCreateDto commandCreateDto)
+        //{   
+        //    var commandModel = _mapper.Map<Command>(commandCreateDto);
+        //    _repository.CreateCommand(commandModel);
+        //    _repository.SaveChanges();
 
-            var commandReadDto = _mapper.Map<CommandReadDto>(commandModel);
+        //    var commandReadDto = _mapper.Map<CommandReadDto>(commandModel);
 
-            return CreatedAtRoute(nameof(GetCommandById), new { Id = commandReadDto.Id}, commandReadDto);
+        //    return CreatedAtRoute(nameof(GetCommandById), new { Id = commandReadDto.Id}, commandReadDto);
 
-            //return Ok(commandReadDto);
+        //    //return Ok(commandReadDto);
 
-        }
+        //}
     }
 }
