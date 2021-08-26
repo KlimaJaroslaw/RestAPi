@@ -120,8 +120,8 @@ namespace Commander.Controllers
             //    cWhere += " AND A_zamowienia.numer_ogolny = @name ";
             StringBuilder cWhere = new StringBuilder();
 
-            cWhere.Append($" AND A_zamowienia.data_wystawienia>{date_min}");
-            cWhere.Append($" AND A_zamowienia.data_wystawienia<{date_max}");
+            cWhere.Append($" AND A_zamowienia.data_wystawienia>'{GlobalData.DateTimeToStringWithFormat(date_min)}'");
+            cWhere.Append($" AND A_zamowienia.data_wystawienia<'{GlobalData.DateTimeToStringWithFormat(date_max)}'");
             switch (invoiced)
             {
                 case 0:
@@ -163,8 +163,8 @@ namespace Commander.Controllers
                      WHERE (1=1) {cWhere}";
 
             SqlCommand cmd = GlobalData.SqlIntoCommand(sql);
-            cmd.Parameters.Add("@id", SqlDbType.Int);
-            cmd.Parameters.Add("@name", SqlDbType.NVarChar);
+           // cmd.Parameters.Add("@id", SqlDbType.Int);
+          // cmd.Parameters.Add("@name", SqlDbType.NVarChar);
           //  cmd.Parameters["@id"].Value = id;
            // cmd.Parameters["@name"].Value = numer_ogolny;
             
@@ -179,6 +179,41 @@ namespace Commander.Controllers
             JSONString = GlobalData.DataTableToJsonObj(commandItems);
             return Ok(JSONString);
 
+        }
+
+        [HttpGet("GetOrderStatuses")]
+        public ActionResult GetOrdersStatuses()
+        {
+            string sql = $"SELECT id, wartosc AS Status FROM A_slo_statusy_www";
+            DataTable commandItems = GlobalData.ExecSQL(sql);
+
+            string JSONString = string.Empty;
+            //JSONString = JsonConvert.SerializeObject(commandItems);
+            JSONString = GlobalData.DataTableToJsonObj(commandItems);
+            return Ok(JSONString);
+
+        }
+
+        [HttpGet("GetOrdersItems")]
+        public ActionResult GetOrdersItems([FromQuery] int id)
+        {
+            StringBuilder cWhere = new StringBuilder();
+            cWhere.Append($" AND id_zamowienia = {id}");
+            string sql = $@"SELECT 
+            kat_towary.symbol AS ItemCode,
+            				kat_towary.nazwa AS ItemName,
+            				A_zamowienia_skl.ilosc AS Qty,
+            				A_zamowienia_skl.cena_s AS NetPrice,
+            				A_zamowienia_skl.cena_s AS Net
+                        FROM A_zamowienia_skl
+                          INNER JOIN kat_towary ON kat_towary.id = A_zamowienia_skl.id_towaru
+                        WHERE (1=1) {cWhere}";
+            SqlCommand cmd = GlobalData.SqlIntoCommand(sql);           
+            DataTable commandItems = GlobalData.ExecCmd(cmd);
+            
+            string JSONString = string.Empty;            
+            JSONString = GlobalData.DataTableToJsonObj(commandItems);
+            return Ok(JSONString);            
         }
 
 

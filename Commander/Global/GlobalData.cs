@@ -36,6 +36,12 @@ namespace Commander
             return cmd;
         }
 
+        public static string DateTimeToStringWithFormat(DateTime dateTime)
+        {
+            return dateTime.ToString("yyyy-MM-dd");
+
+        }
+
 
         public static string DataTableToJsonObj(DataTable dt)
         {
